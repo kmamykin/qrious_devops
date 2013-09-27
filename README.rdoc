@@ -1,3 +1,32 @@
 = QriousDevops
 
+gem 'qrious_devops'
+
+in ./lib/tasks/heroku.rake
+```ruby
+namespace :heroku do
+  task :setup do
+    QriousDevops::Environments.environments = {
+        :production => {:heroku_app => 'qrious'},
+        :staging => {:heroku_app => 'qrious-staging'},
+    }
+  end
+end
+```
+
+Deployment process:
+Checkout git branch corresponding to the environment: {production, staging}
+and merge code to deploy (typically master)
+Then run
+rake deploy
+which will push the code to heroku and perform some housekeeping.
+
+Also:
+rake deploy:check
+rake deploy:migrate
+rake deploy:reindex
+rake deploy:restart
+rake deploy:maintenance_on
+rake deploy:maintenance_off
+
 This project rocks and uses MIT-LICENSE.

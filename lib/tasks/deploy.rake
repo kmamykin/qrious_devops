@@ -2,6 +2,7 @@ task :deploy => 'deploy:check' do
   sh "git push #{QriousDevops::Environments.target_environment} #{QriousDevops::Environments.target_environment}:master"
   sh "git tag #{QriousDevops::Environments.target_environment}-#{Time.now.strftime("%Y%m%d%H%M%S")}"
   sh "git fetch #{QriousDevops::Environments.target_environment}"
+  Rake::Task['deploy:airbrake'].invoke
 end
 
 namespace :deploy do
@@ -39,8 +40,14 @@ namespace :deploy do
     maintenance(QriousDevops::Environments.target_app, 'off')
   end
 
-  task :airbrake do
-    sh "rake airbrake:deploy TO=#{QriousDevops::Environments.current_git_branch} REVISION=#{last_commit} REPO=qrious USER=kmamykin"
+  task :airbrake => :environment do
+    require 'airbrake_tasks'
+    AirbrakeTasks.deploy(:rails_env      => QriousDevops::Environments.current_git_branch,
+                         :scm_revision   => last_commit,
+                         :scm_repository => '',
+                         :local_username => 'kmamykin',
+                         #:api_key        => ENV['API_KEY'],
+                         :dry_run        => false)
   end
 
   def maintenance(app, action)
