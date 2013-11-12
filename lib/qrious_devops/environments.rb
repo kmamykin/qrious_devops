@@ -2,7 +2,11 @@ module QriousDevops
   class Environments
 
     def self.development_mongodb_uri
-      "mongodb://localhost:27017/qrious_development"
+      yaml = YAML.load(ERB.new(File.read("#{Rails.root}/config/mongoid.yml")).result)
+      pp yaml
+      db = yaml['development']['sessions']['default']['database']
+      host = yaml['development']['sessions']['default']['hosts'].first
+      "mongodb://#{host}/#{db}"
     end
 
     def self.development_redis_uri
@@ -14,7 +18,8 @@ module QriousDevops
     end
 
     def self.latest_backup_dir
-      Dir["db/backups/production/*/*"].sort.last
+      # note the trailing / which returns only directories
+      Dir["db/backups/*/*/"].sort.last
     end
 
     def self.mongo_url(env)
